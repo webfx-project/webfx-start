@@ -1,0 +1,70 @@
+
+name: Documentation build
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      web-push-repository-name:  'webfx-netlify'
+      web-push-repository-owner: 'webfx-project'
+      web-push-branch: 'start'
+      web-push-username: ${{ github.actor }}
+      web-push-email: ${{ secrets.API_GITHUB_EMAIL }}
+      generated-docs-dir: ./target/generated-docs
+      API_GITHUB_TOKEN: ${{ secrets.API_GITHUB_TOKEN }}
+      jdk-version: '17'
+
+    steps:
+
+      ##################################################################################################################
+      #                                              Preparation                                                       #
+      ##################################################################################################################
+
+      # Set up the JDK and Maven
+      - name: Set up JDK ${{ env.jdk-version }}
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.jdk-version }}
+
+      - name: Install graphviz
+        run: sudo apt update; sudo apt install graphviz
+
+      - name: Install Pygments
+        run: sudo gem install pygments.rb
+
+      # Checkout this repository
+      - name: Checkout this repository
+        uses: actions/checkout@v2
+
+
+      ##################################################################################################################
+      #                                                 Build                                                          #
+      ##################################################################################################################
+
+      # Building this repository with Maven to generate the documentation
+      - name: Building with Maven
+        run: mvn -B compile
+
+
+      ##################################################################################################################
+      #                                                Publish                                                         #
+      ##################################################################################################################
+
+      - if: env.API_GITHUB_TOKEN != ''
+        name: Push generated documentation to ${{ env.web-push-branch }} branch
+        uses: cpina/github-action-push-to-another-repository@master
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_GITHUB_TOKEN }}
+        with:
+          source-directory: ${{ env.generated-docs-dir }}
+          destination-repository-username: ${{ env.web-push-repository-owner }}
+          destination-repository-name: ${{ env.web-push-repository-name }}
+          target-branch: ${{ env.web-push-branch }}
+          destination-github-username: ${{ env.web-push-username }}
+          user-email: ${{ env.web-push-email }}
