@@ -181,7 +181,7 @@ If a new version is available, it will download it and build it for you.
 NOTE: This is so far the only command that uses `git` (a `git pull` of the webfx-cli repository). The CLI will not call `git` on your own repositories.
 
 
-=== Creating your first WebFX app
+== Creating your first WebFX app
 You are now ready to create your first https://docs.webfx.dev/#_creating_your_first_webfx_app[WebFX app].
 
 // Download link:pom.xml[pom.xml^]
